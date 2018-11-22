@@ -1,0 +1,7 @@
+dependencies:
+- name: mariadb
+  version: 0.1.0
+  repository: file://../../mariadb/v0.1.0
+  condition: mariadb.enabled
+  tags:
+    - wordpress-database

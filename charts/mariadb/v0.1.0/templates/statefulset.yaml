@@ -126,35 +126,6 @@ spec:
           mountPath: {{ .Values.master.persistence.mountPath }}
 {{- end }}
 {{- end }}
-{{- if .Values.metrics.enabled }}
-      - name: metrics
-        image: {{ template "metrics.image" . }}
-        imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mariadb.fullname" . }}
-              key: mariadb-root-password
-        command: [ 'sh', '-c', 'DATA_SOURCE_NAME="root:$MYSQL_ROOT_PASSWORD@(localhost:3306)/" /bin/mysqld_exporter' ]
-        ports:
-        - name: metrics
-          containerPort: 9104
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: metrics
-          initialDelaySeconds: 15
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /metrics
-            port: metrics
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
-        resources:
-{{ toYaml .Values.metrics.resources | indent 10 }}
-{{- end }}
       volumes:
       {{- if and .Values.master.persistence.enabled .Values.master.persistence.existingClaim }}
         - name: {{ .Values.master.persistence.existingClaim }}

@@ -20,18 +20,6 @@ questions:
     description: "Docker image tag"
     type: string
     label: MariaDB Image Tag
-  - variable: metrics.image
-    default: "prom/mysqld-exporter"
-    description: "image name for metrics"
-    type: string
-    label: Metrics Image Name
-    show_if: "metrics.enabled=true"
-  - variable: metrics.imageTag
-    default: "v0.10.0"
-    description: "image tag for metrics"
-    type: string
-    label: Metrics Image Tag
-    show_if: "metrics.enabled=true"
 - variable: db.user
   default: "admin"
   description: "Username of new user to create."

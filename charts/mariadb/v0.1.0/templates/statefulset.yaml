@@ -21,9 +21,9 @@ spec:
         release: "{{ .Release.Name }}"
         chart: {{ template "mariadb.chart" . }}
     spec:
-      securityContext:
-        runAsUser: 1001
-        fsGroup: 1001
+      # securityContext:
+      #   runAsUser: 1001
+      #   fsGroup: 1001
       {{- if eq .Values.master.antiAffinity "hard" }}
       affinity:
       {{- with .Values.master.affinity  }}
@@ -71,40 +71,29 @@ spec:
         image: {{ template "mariadb.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         env:
-        - name: MARIADB_ROOT_PASSWORD
+        - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-root-password
         {{- if .Values.db.user }}
-        - name: MARIADB_USER
+        - name: MYSQL_USER
           value: "{{ .Values.db.user }}"
-        - name: MARIADB_PASSWORD
+        - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-password
         {{- end }}
-        - name: MARIADB_DATABASE
+        - name: MYSQL_DATABASE
           value: "{{ .Values.db.name }}"
-        {{- if .Values.replication.enabled }}
-        - name: MARIADB_REPLICATION_MODE
-          value: "master"
-        - name: MARIADB_REPLICATION_USER
-          value: "{{ .Values.replication.user }}"
-        - name: MARIADB_REPLICATION_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mariadb.fullname" . }}
-              key: mariadb-replication-password
-        {{- end }}
         ports:
         - name: mysql
           containerPort: 3306
         {{- if .Values.master.livenessProbe.enabled }}
         livenessProbe:
           exec:
-            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD"]
           initialDelaySeconds: {{ .Values.master.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.master.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.master.livenessProbe.timeoutSeconds }}
@@ -114,7 +103,7 @@ spec:
         {{- if .Values.master.readinessProbe.enabled }}
         readinessProbe:
           exec:
-            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD"]
           initialDelaySeconds: {{ .Values.master.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.master.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.master.readinessProbe.timeoutSeconds }}
@@ -142,12 +131,12 @@ spec:
         image: {{ template "metrics.image" . }}
         imagePullPolicy: {{ .Values.metrics.image.pullPolicy | quote }}
         env:
-        - name: MARIADB_ROOT_PASSWORD
+        - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mariadb.fullname" . }}
               key: mariadb-root-password
-        command: [ 'sh', '-c', 'DATA_SOURCE_NAME="root:$MARIADB_ROOT_PASSWORD@(localhost:3306)/" /bin/mysqld_exporter' ]
+        command: [ 'sh', '-c', 'DATA_SOURCE_NAME="root:$MYSQL_ROOT_PASSWORD@(localhost:3306)/" /bin/mysqld_exporter' ]
         ports:
         - name: metrics
           containerPort: 9104
